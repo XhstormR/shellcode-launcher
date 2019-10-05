@@ -40,10 +40,16 @@ int main(int argc, char *argv[]) {
   long rawSize;
   char *raw;
 
-  if (argc == 2 && strcmp(argv[1], "f") == 0) {
+  if (argc != 2) {
+    return 0;
+  }
+
+  if (strcmp(argv[1], "f") == 0) {
     raw = readFile(&rawSize);
-  } else {
+  } else if (strcmp(argv[1], "r") == 0) {
     raw = readResource(&rawSize);
+  } else {
+    return 0;
   }
 
   void *ptr = VirtualAlloc(0, rawSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
@@ -58,7 +64,6 @@ int main(int argc, char *argv[]) {
 /*
   short *wstr;
   int size = LoadStringW(0, 123, (short *)&wstr, 0); // STRINGTABLE
-  printf("%d\n", size);
   printf("%ls\n", wstr);
 
   // 宽字节 -> 多字节
