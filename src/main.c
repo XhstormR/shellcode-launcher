@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include <windows.h>
 
+int strcmp(const char *l, const char *r) {
+  for (; *l == *r && *l; l++, r++) {
+  }
+  return *(unsigned char *)l - *(unsigned char *)r;
+}
+
 char *convert(long *rawSize, const char *text) {
   long textSize = strlen(text);
   *rawSize = textSize / 2;
@@ -32,8 +38,23 @@ char *readFile(long *rawSize) {
 }
 
 char *readResource(long *rawSize) {
-  char *text = LoadResource(0, FindResource(0, MAKEINTRESOURCE(123), RT_RCDATA));
-  return convert(rawSize, text);
+  char *text = NULL;
+  for (int i = 0, len = 0; i < 50; i++) {
+    char *res = LoadResource(0, FindResource(0, MAKEINTRESOURCE(i), RT_RCDATA));
+    len += strlen(res);
+    text = (char *)realloc(text, len);
+
+    if (i == 0) {
+      strcpy(text, res);
+    } else {
+      strcat(text, res);
+    }
+  }
+
+  char *raw = convert(rawSize, text);
+  free(text);
+
+  return raw;
 }
 
 int main(int argc, char *argv[]) {
@@ -43,10 +64,11 @@ int main(int argc, char *argv[]) {
   if (argc != 2) {
     return 0;
   }
+  char *flag = argv[1];
 
-  if (strcmp(argv[1], "f") == 0) {
+  if (strcmp(flag, "f") == 0) {
     raw = readFile(&rawSize);
-  } else if (strcmp(argv[1], "r") == 0) {
+  } else if (strcmp(flag, "r") == 0) {
     raw = readResource(&rawSize);
   } else {
     return 0;
@@ -72,4 +94,8 @@ int main(int argc, char *argv[]) {
   str[size] = 0;
   printf("%s\n", str);
   free(str);
+*/
+
+/*
+https://git.musl-libc.org/cgit/musl/tree/src/string/strcmp.c
 */

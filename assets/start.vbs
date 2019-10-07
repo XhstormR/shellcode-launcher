@@ -1,1 +1,1 @@
-CreateObject("WScript.Shell").Run "main.exe",0
+CreateObject("WScript.Shell").Run "main.exe r", 0, false
