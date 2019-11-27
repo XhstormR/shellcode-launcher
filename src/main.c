@@ -2,6 +2,8 @@
 #include <process.h>
 #include <windows.h>
 
+static HINSTANCE DllHinst;
+
 static int _strcmp(const char *l, const char *r) {
   for (; *l == *r && *l; l++, r++) {
   }
@@ -41,7 +43,7 @@ static char *readFile(long *rawSize) {
 static char *readResource(long *rawSize) {
   char *text = NULL;
   for (int i = 0, len = 0; i < 50; i++) {
-    char *res = LoadResource(0, FindResource(0, MAKEINTRESOURCE(i), RT_RCDATA));
+    char *res = LoadResource(DllHinst, FindResource(DllHinst, MAKEINTRESOURCE(i), RT_RCDATA));
     len += strlen(res);
     text = (char *)realloc(text, len);
 
@@ -58,14 +60,11 @@ static char *readResource(long *rawSize) {
   return raw;
 }
 
-int main(int argc, char *argv[]) {
+int main(HWND hwnd, HINSTANCE hinst, LPTSTR lpCmdLine, int nCmdShow) {
   long rawSize;
   char *raw;
 
-  if (argc != 2) {
-    return 0;
-  }
-  char *flag = argv[1];
+  char *flag = lpCmdLine;
 
   if (_strcmp(flag, "f") == 0) {
     raw = readFile(&rawSize);
@@ -86,11 +85,24 @@ int main(int argc, char *argv[]) {
   free(raw);
 
   char args[MAX_PATH], path[MAX_PATH];
-  GetModuleFileName(0, path, MAX_PATH);
+  GetModuleFileName(DllHinst, path, MAX_PATH);
   sprintf(args, "/c del \"%s\"", path);
   spawnlp(P_OVERLAY, "cmd", args, NULL);
 
   return 0;
+}
+
+BOOL DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
+  switch (reason) {
+  case DLL_PROCESS_ATTACH:
+    DllHinst = hinst;
+    break;
+  case DLL_THREAD_ATTACH:
+  case DLL_THREAD_DETACH:
+  case DLL_PROCESS_DETACH:
+    break;
+  }
+  return TRUE;
 }
 
 /*
