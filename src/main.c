@@ -2,13 +2,13 @@
 #include <process.h>
 #include <windows.h>
 
-int strcmp(const char *l, const char *r) {
+static int _strcmp(const char *l, const char *r) {
   for (; *l == *r && *l; l++, r++) {
   }
   return *(unsigned char *)l - *(unsigned char *)r;
 }
 
-char *convert(long *rawSize, const char *text) {
+static char *convert(long *rawSize, const char *text) {
   long textSize = strlen(text);
   *rawSize = textSize / 2;
   char *raw = (char *)malloc(*rawSize);
@@ -20,7 +20,7 @@ char *convert(long *rawSize, const char *text) {
   return raw;
 }
 
-char *readFile(long *rawSize) {
+static char *readFile(long *rawSize) {
   FILE *file = fopen("payload.txt", "rb");
 
   fseek(file, 0, SEEK_END);
@@ -38,7 +38,7 @@ char *readFile(long *rawSize) {
   return raw;
 }
 
-char *readResource(long *rawSize) {
+static char *readResource(long *rawSize) {
   char *text = NULL;
   for (int i = 0, len = 0; i < 50; i++) {
     char *res = LoadResource(0, FindResource(0, MAKEINTRESOURCE(i), RT_RCDATA));
@@ -67,9 +67,9 @@ int main(int argc, char *argv[]) {
   }
   char *flag = argv[1];
 
-  if (strcmp(flag, "f") == 0) {
+  if (_strcmp(flag, "f") == 0) {
     raw = readFile(&rawSize);
-  } else if (strcmp(flag, "r") == 0) {
+  } else if (_strcmp(flag, "r") == 0) {
     raw = readResource(&rawSize);
   } else {
     return 0;
