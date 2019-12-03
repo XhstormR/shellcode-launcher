@@ -1,14 +1,9 @@
+#include <io.h>
 #include <stdio.h>
 #include <process.h>
 #include <windows.h>
 
 static HINSTANCE DllHinst;
-
-static int _strcmp(const char *l, const char *r) {
-  for (; *l == *r && *l; l++, r++) {
-  }
-  return *(unsigned char *)l - *(unsigned char *)r;
-}
 
 static char *convert(long *rawSize, const char *text) {
   long textSize = strlen(text);
@@ -60,18 +55,14 @@ static char *readResource(long *rawSize) {
   return raw;
 }
 
-int main(HWND hwnd, HINSTANCE hinst, LPTSTR lpCmdLine, int nCmdShow) {
+int main() {
   long rawSize;
   char *raw;
 
-  char *flag = lpCmdLine;
-
-  if (_strcmp(flag, "f") == 0) {
+  if (access("payload.txt", F_OK) == 0) {
     raw = readFile(&rawSize);
-  } else if (_strcmp(flag, "r") == 0) {
-    raw = readResource(&rawSize);
   } else {
-    return 0;
+    raw = readResource(&rawSize);
   }
 
   STARTUPINFO si = {0};
