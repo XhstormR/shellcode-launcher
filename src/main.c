@@ -21,12 +21,12 @@ static char *readFile(long *rawSize) {
   FILE *file = fopen("payload.txt", "rb");
 
   fseek(file, 0, SEEK_END);
-  long fileSize = ftell(file);
+  long len = ftell(file);
   rewind(file);
 
-  char *text = (char *)malloc(fileSize + 1);
-  fread(text, sizeof(char), fileSize, file);
-  text[fileSize] = 0;
+  char *text = (char *)malloc(len + 1);
+  fread(text, sizeof(char), len, file);
+  text[len] = 0;
   fclose(file);
 
   char *raw = convert(rawSize, text);
@@ -40,7 +40,8 @@ static char *readResource(long *rawSize) {
   for (int i = 0, len = 0; i < 50; i++) {
     char *res = LoadResource(DllHinst, FindResource(DllHinst, MAKEINTRESOURCE(i), RT_RCDATA));
     len += strlen(res);
-    text = (char *)realloc(text, len);
+    text = (char *)realloc(text, len + 1);
+    text[len] = 0;
 
     if (i == 0) {
       strcpy(text, res);
