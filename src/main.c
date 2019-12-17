@@ -84,6 +84,11 @@ int main() {
   return 0;
 }
 
+int msg() {
+  puts("stub");
+  return 0;
+}
+
 BOOL DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
   switch (reason) {
   case DLL_PROCESS_ATTACH:
