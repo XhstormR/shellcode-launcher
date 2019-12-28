@@ -5,26 +5,26 @@
 
 static HINSTANCE DllHinst;
 
-static char *convert(long *rawSize, const char *text) {
-  long textSize = strlen(text);
+static char *convert(int *rawSize, const char *text) {
+  int textSize = strlen(text);
   *rawSize = textSize / 2;
-  char *raw = (char *)malloc(*rawSize);
+  char *raw = malloc(*rawSize);
 
-  for (size_t i = 0; i < textSize; i += 2) {
-    sscanf(text + i, "%2x", &raw[i / 2]);
+  for (int i = 0; i < textSize; i += 2) {
+    sscanf(text + i, "%2x", (int *)&raw[i / 2]);
   }
 
   return raw;
 }
 
-static char *readFile(long *rawSize) {
+static char *readFile(int *rawSize) {
   FILE *file = fopen("payload.txt", "rb");
 
   fseek(file, 0, SEEK_END);
-  long len = ftell(file);
+  int len = ftell(file);
   rewind(file);
 
-  char *text = (char *)malloc(len + 1);
+  char *text = malloc(len + 1);
   fread(text, sizeof(char), len, file);
   text[len] = 0;
   fclose(file);
@@ -35,12 +35,12 @@ static char *readFile(long *rawSize) {
   return raw;
 }
 
-static char *readResource(long *rawSize) {
+static char *readResource(int *rawSize) {
   char *text = NULL;
   for (int i = 0, len = 0; i < 50; i++) {
     char *res = LoadResource(DllHinst, FindResource(DllHinst, MAKEINTRESOURCE(i), RT_RCDATA));
     len += strlen(res);
-    text = (char *)realloc(text, len + 1);
+    text = realloc(text, len + 1);
     text[len] = 0;
 
     if (i == 0) {
@@ -57,7 +57,7 @@ static char *readResource(long *rawSize) {
 }
 
 int main() {
-  long rawSize;
+  int rawSize;
   char *raw;
 
   if (access("payload.txt", F_OK) == 0) {
@@ -89,7 +89,7 @@ int msg() {
   return 0;
 }
 
-BOOL DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
+BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
   switch (reason) {
   case DLL_PROCESS_ATTACH:
     DllHinst = hinst;
@@ -108,7 +108,7 @@ BOOL DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
   printf("%ls\n", wstr);
 
   // 宽字节 -> 多字节
-  char *str = (char *)malloc(size + 1);
+  char *str = malloc(size + 1);
   wcstombs(str, wstr, size);
   str[size] = 0;
   printf("%s\n", str);
