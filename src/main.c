@@ -103,8 +103,8 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
 }
 
 /*
-  short *wstr;
-  int size = LoadStringW(0, 123, (short *)&wstr, 0); // STRINGTABLE
+  wchar_t *wstr;
+  int size = LoadStringW(0, 123, (wchar_t *)&wstr, 0); // STRINGTABLE
   printf("%ls\n", wstr);
 
   // 宽字节 -> 多字节
@@ -113,6 +113,12 @@ BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
   str[size] = 0;
   printf("%s\n", str);
   free(str);
+
+  // 多字节 -> 宽字节
+  char *str = getcwd(0, 0);
+  int size = mbstowcs(0, str, 0) + 1;
+  wchar_t *wstr = malloc(size * sizeof(wchar_t));
+  mbstowcs(wstr, str, size);
 */
 
 /*
