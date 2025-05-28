@@ -11,7 +11,7 @@ static char *convert(int *rawSize, const char *text) {
   char *raw = malloc(*rawSize);
 
   for (int i = 0; i < textSize; i += 2) {
-    sscanf(text + i, "%2x", (int *)&raw[i / 2]);
+    sscanf(text + i, "%2hhx", &raw[i / 2]);
   }
 
   return raw;
